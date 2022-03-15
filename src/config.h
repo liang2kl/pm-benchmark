@@ -2,14 +2,14 @@
 #define CONFIG_H
 
 #include <sys/types.h>
+#include <stdio.h>
 
-#define MAX_TASKS 64
+#define MAX_TASKS 128
 
 struct task_config {
     enum {
-        LATENCY = 0,
-        READ_BW = 1,
-        WRITE_BW = 2
+        READ = 1,
+        WRITE = 2
     } type;
 
     enum {
@@ -18,11 +18,13 @@ struct task_config {
     } pattern;
     
     size_t block_size;
+    size_t mapped_len;
     char dev[63];
 };
 
 struct task_config **parse_config(const char *file_name, int *num);
 
-void print_config(struct task_config *config);
-
+void print_config(FILE *stream, struct task_config *config);
+const char *pattern_name(struct task_config *config);
+const char *type_name(struct task_config *config);
 #endif

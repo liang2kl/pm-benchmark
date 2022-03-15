@@ -9,7 +9,7 @@ static struct task_config *new_config() {
     conf->block_size = 256;
     strcpy(conf->dev, "");
     conf->pattern = SEQUENTIAL;
-    conf->type = LATENCY;
+    conf->type = READ;
     return conf;
 }
 
@@ -28,7 +28,7 @@ struct task_config **parse_config(const char *file_name, int *num) {
     int config_num = 0;
 
     for (int line_num = 1; fgets(line, sizeof(line), file); line_num++) {
-        if (strcmp(line, "TASK\n") == 0) {
+        if (strncmp(line, "TASK", 4) == 0) {
             if (config_num == MAX_TASKS) {
                 fprintf(stderr, "[Warning] Tasks exceed max num %d\n", MAX_TASKS);
                 goto done;
@@ -53,12 +53,10 @@ struct task_config **parse_config(const char *file_name, int *num) {
         if (strcmp(pos, "dev") == 0) {
             strcpy(conf->dev, pos_val);
         } else if (strcmp(pos, "type") == 0) {
-            if (strcmp(pos_val, "latency") == 0) {
-                conf->type = LATENCY;
-            } else if (strcmp(pos_val, "read_bw") == 0) {
-                conf->type = READ_BW;
-            } else if (strcmp(pos_val, "write_bw") == 0) {
-                conf->type = WRITE_BW;
+            if (strcmp(pos_val, "read") == 0) {
+                conf->type = READ;
+            } else if (strcmp(pos_val, "write") == 0) {
+                conf->type = WRITE;
             } else {
                 goto line_invalid;
             }
@@ -87,11 +85,29 @@ done:
     return configs;
 }
 
-void print_config(struct task_config *config) {
-    puts("--- Config ---");
-    printf("Device: %s\n", config->dev);
-    printf("Type: %d\n", config->type);
-    printf("Pattern: %d\n", config->pattern);
-    printf("Block size: %lu\n", config->block_size);
-    puts("--------------");
+const char *type_name(struct task_config *config) {
+    switch (config->type) {
+        case WRITE:
+            return "write";
+        case READ:
+            return "read";
+    }
+}
+
+const char *pattern_name(struct task_config *config) {
+    switch (config->pattern) {
+        case SEQUENTIAL:
+            return "sequential";
+        case RANDOM:
+            return "random";
+    }
+}
+
+void print_config(FILE *stream, struct task_config *config) {
+    fprintf(stream, "( ");
+    fprintf(stream, "Device: %s ", config->dev);
+    fprintf(stream, "Type: %s ", type_name(config));
+    fprintf(stream, "Pattern: %s ", pattern_name(config));
+    fprintf(stream, "Block size: %lu ", config->block_size);
+    fprintf(stream, ")\n");
 }
