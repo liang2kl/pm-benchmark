@@ -1,7 +1,6 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include <libpmem.h>
 #include "config.h"
 #include "result.h"
 #include "utils.h"

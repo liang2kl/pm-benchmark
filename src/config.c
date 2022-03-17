@@ -64,7 +64,7 @@ struct task_config **parse_config(const char *file_name, int *num) {
             if (strcmp(pos_val, "sequential") == 0) {
                 conf->pattern = SEQUENTIAL;
             } else if (strcmp(pos_val, "random") == 0) {
-                conf->type = RANDOM;
+                conf->pattern = RANDOM;
             } else {
                 goto line_invalid;
             }
@@ -75,8 +75,9 @@ struct task_config **parse_config(const char *file_name, int *num) {
         }
         
         continue;
+
 line_invalid:
-    fprintf(stderr, "[Warning] Invalid config at line #%d\n", line_num);
+        fprintf(stderr, "[Warning] Invalid config at line #%d\n", line_num);
     }
 
 done:

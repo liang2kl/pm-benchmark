@@ -29,14 +29,10 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    // disables mapping address randomization
+    // Disable mapping address randomization
     putenv("PMEM_MMAP_HINT=0x10000000000");
-    // forces libpmem to always use the non-temporal move instructions
-    putenv("PMEM_MOVNT_THRESHOLD=0");
-    // never issue any of CLFLUSH, CLFLUSHOPT or CLWB instructions on Intel hardware
-    putenv("PMEM_NO_FLUSH=1");
 
-        configs = parse_config(argv[1], &task_num);
+    configs = parse_config(argv[1], &task_num);
 
     if (!configs) {
         exit(1);
@@ -52,8 +48,8 @@ int main(int argc, char **argv) {
 
         if ((pmem_addr = pmem_map_file(configs[i]->dev, PMEM_LEN, PMEM_FILE_CREATE,
                                        0666, &mapped_len, &is_pmem)) == NULL) {
-            printf("Fail to map address for dev '%s': %s\n", configs[i]->dev, strerror(errno));
-            continue;
+            fprintf(stderr, "Fail to map address for dev '%s': %s\n", configs[i]->dev, strerror(errno));
+            goto clean;
         }
 
 
@@ -73,6 +69,8 @@ int main(int argc, char **argv) {
                pattern_name(configs[i]), configs[i]->block_size, results[i].latency,
                results[i].bandwidth);
 
+        pmem_unmap(pmem_addr, mapped_len);
+clean:
         free(configs[i]);
     }
 
